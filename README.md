@@ -14,7 +14,7 @@ Die run_ring sorgt für die Ausführung der ring.py als user "fhem" und wird bei
     @reboot /opt/fhem/bin/run_ring
     @hourly /opt/fhem/bin/run_ring
 
-In fhem habe ich einen Dummy angelegt mit dem Namen "Ring_<RingDeviceName>" (Achtung, wenn der Name nicht passt, muss die ring.py angepasst werden). <RingDeviceName> wird durch den Namen des Ring Devices ersetzt, wobei Leerzeichen entfernt werden. Bsp: Ring Device heißt "Front Door", in FHEM wird "Ring_FrontDoor" geschrieben. Der entsprechende Dummy wird wie folgt angelegt:
+In fhem habe ich einen Dummy angelegt mit dem Namen "Ring_[RingDeviceName]" (Achtung, wenn der Name nicht passt, muss die ring.py angepasst werden). [RingDeviceName] wird durch den Namen des Ring Devices ersetzt, wobei Leerzeichen entfernt werden. Bsp: Ring Device heißt "Front Door", in FHEM wird "Ring_FrontDoor" geschrieben. Der entsprechende Dummy wird wie folgt angelegt:
     
     define Ring_FrontDoor dummy
     attr Ring_FrontDoor setList none motion ring
