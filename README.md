@@ -20,7 +20,7 @@ In fhem habe ich einen Dummy angelegt mit dem Namen "Ring_<RingDeviceName>" (Ach
     attr Ring_FrontDoor setList none motion ring
     attr Ring_FrontDoor devStateIcon none:it_camera@green motion:secur_alarm@red ring:secur_alarm@orange
 
-Ein DOIF sorgt dafür, dass der Status nach 5sec zurück gesetzt wird und eine Aktion ausgeführt wird. Beispiel wie folgt, FK_Haustuer ist ein Fenster/Türkontakt:
+Ein DOIF sorgt dafür, dass der Status nach 5sec zurück gesetzt wird und eine Aktion ausgeführt wird. Beispiel wie folgt, FK_Haustuer ist ein Fenster/Türkontakt xmp3 eine Klingel:
 
     defmod Ring_FrontDoor_DOIF DOIF ([Ring_FrontDoor] eq "ring" and [FK_Haustuer] eq "closed" and [FK_Haustuer:state:sec] > 5)
     	(set xmp3 playTone 0) (set Ring_FrontDoor none)
