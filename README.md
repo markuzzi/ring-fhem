@@ -34,4 +34,6 @@ Ein DOIF sorgt dafür, dass der Status nach 5sec zurück gesetzt wird und eine A
     attr Ring_FrontDoor_DOIF stateFormat wait_timer
     attr Ring_FrontDoor_DOIF wait 0,5:0,5:0
 
+Diskussionen zum FHEM Modul hier im Forum: https://forum.fhem.de/index.php/topic,75754.0.html
+
 Viel Erfolg!
