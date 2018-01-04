@@ -77,7 +77,7 @@ def getDeviceInfo(dev):
     dev.update()
     logger.info("Updating device data for device '"+dev.name+"' in FHEM...")
     srRing('account ' + str(dev.account_id), dev)
-    srRing('address ' + str(dev.address), dev) 
+    srRing('address ' + dev.address, dev) 
     srRing('family ' + str(dev.family), dev) 
     srRing('id ' + str(dev.id), dev) 
     srRing('name ' + str(dev.name), dev) 
