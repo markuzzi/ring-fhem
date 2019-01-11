@@ -114,21 +114,40 @@ def alertDevice(dev,alert):
     srRing('lastAlertDeviceName ' + str(dev.name), dev)
     srRing('lastAlertSipTo ' + str(alert.get('sip_to')), dev)
     srRing('lastAlertSipToken ' + str(alert.get('sip_token')), dev)
-    if(alert.get('kind') == 'ding'):
-        setRing('ring', dev)
-        srRing('lastAlertType ring', dev)
-        his = dev.history(limit=100,kind='ding')
-        if(len(his)>0):
-            dev.recording_download(his[0]['id'], filename=fhem_path + 'last_ding_video.mp4',override=True)
+    
+    lastAlertID = alert.get('id')
+    lastAlertKind = alert.get('kind')
+    
+    if (lastAlertKind == 'ding') or (lastAlertKind == 'motion'):
+        lastHistoryID = dev.history(limit=1,kind=lastAlertKind)[0]['id']
+        
+        #Wait and check history until new alert is added
+        i=0
+        while lastHistoryID != lastAlertID:
+            logger.debug("Wait and check history until new alert is added lastHistoryID != lastAlertID")
+            logger.debug(" lastHistoryID:"+str(lastHistoryID))
+            logger.debug(" lastAlertID:"+str(lastAlertID))
+            time.sleep(POLLS)
+            lastHistoryID = dev.history(limit=1,kind=lastAlertKind)[0]['id']
+            
+            i+=1
+            if i>60: # break when no history object can be found
+                break
+                
+        if (lastAlertKind == 'ding') and i<=60:
+            dev.recording_download(lastAlertID, filename=fhem_path + 'last_ding_video.mp4',override=True)
             srRing('lastDingVideo ' + fhem_path + 'last_ding_video.mp4', dev)
-    elif(alert.get('kind') == 'motion'):
-        setRing('motion', dev)
-        srRing('lastAlertType motion', dev)
-        his = dev.history(limit=100,kind='motion')
-        if(len(his)>0):
-            dev.recording_download(his[0]['id'], filename=fhem_path + 'last_motion_video.mp4',override=True)
+            setRing('ring', dev)
+            srRing('lastAlertType ring', dev)
+            
+        elif (lastAlertKind == 'motion') and i<=60:
+            dev.recording_download(lastAlertID, filename=fhem_path + 'last_motion_video.mp4',override=True)
             srRing('lastMotionVideo ' + fhem_path + 'last_motion_video.mp4', dev)
-    srRing('lastCaptureURL ' + str(dev.recording_url(dev.last_recording_id)), dev)
+            srRing('lastAlertType motion', dev)
+            setRing('motion', dev)  
+        
+        if i<=60:
+            srRing('lastCaptureURL ' + str(dev.recording_url(dev.last_recording_id)), dev)
 
 
 
