@@ -108,6 +108,15 @@ def pollDevices():
         if i>600:
             break
 
+def findHistoryItem(historyArry,id):
+    ret = None
+    for singleItem in historyArry:
+        if (singleItem['id']==id):
+            ret = singleItem
+            break
+    return ret
+
+
 def alertDevice(dev,alert):
     srRing('lastAlertDeviceID ' + str(dev.id), dev)
     srRing('lastAlertDeviceAccountID ' + str(dev.account_id), dev)
@@ -117,36 +126,45 @@ def alertDevice(dev,alert):
     
     lastAlertID = alert.get('id')
     lastAlertKind = alert.get('kind')
+    logger.debug("lastAlertID:"+str(lastAlertID))
+    logger.debug("lastAlertKind:"+str(lastAlertKind))
     
     if (lastAlertKind == 'ding') or (lastAlertKind == 'motion'):
-        lastHistoryID = dev.history(limit=1,kind=lastAlertKind)[0]['id']
-        
-        #Wait and check history until new alert is added
-        i=0
-        while lastHistoryID != lastAlertID:
-            logger.debug("Wait and check history until new alert is added lastHistoryID != lastAlertID")
-            logger.debug(" lastHistoryID:"+str(lastHistoryID))
-            logger.debug(" lastAlertID:"+str(lastAlertID))
-            time.sleep(POLLS)
-            lastHistoryID = dev.history(limit=1,kind=lastAlertKind)[0]['id']
-            
-            i+=1
-            if i>60: # break when no history object can be found
+        videoIsReadyForDownload = None
+        counti = 1
+        while (videoIsReadyForDownload is None):
+            logger.debug(str(counti) + ". Try to find hitory and video in history data list")
+            logger.debug("  hitoryID:"+str(lastAlertID))
+            try:
+                singleHistoryItem = findHistoryItem(dev.history(limit=10,kind=lastAlertKind),lastAlertID)
+                if singleHistoryItem and singleHistoryItem['id'] == lastAlertID :
+                    logger.debug("History item found!")
+                    if singleHistoryItem['recording']['status'] == 'ready':
+                        logger.debug("Video is now ready to downloading")
+                        videoIsReadyForDownload = True
+            except Exception as inst:
+                logger.debug("Repeating...")
+            time.sleep(1)
+            counti+=1
+            if (counti>240):
+                logger.debug("Stop trying to find history and video data")
                 break
                 
-        if (lastAlertKind == 'ding') and i<=60:
+        if (lastAlertKind == 'ding') and videoIsReadyForDownload:
+            logger.debug("Start downloading new ding video now")
             dev.recording_download(lastAlertID, filename=fhem_path + 'last_ding_video.mp4',override=True)
             srRing('lastDingVideo ' + fhem_path + 'last_ding_video.mp4', dev)
             setRing('ring', dev)
             srRing('lastAlertType ring', dev)
             
-        elif (lastAlertKind == 'motion') and i<=60:
+        elif (lastAlertKind == 'motion') and videoIsReadyForDownload:
+            logger.debug("Start downloading new motion video now")
             dev.recording_download(lastAlertID, filename=fhem_path + 'last_motion_video.mp4',override=True)
             srRing('lastMotionVideo ' + fhem_path + 'last_motion_video.mp4', dev)
             srRing('lastAlertType motion', dev)
             setRing('motion', dev)  
         
-        if i<=60:
+        if videoIsReadyForDownload:
             srRing('lastCaptureURL ' + str(dev.recording_url(dev.last_recording_id)), dev)
 
 
